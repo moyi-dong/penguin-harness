@@ -451,6 +451,19 @@ describe("read_file — bounded scan and output budget", () => {
     expect(text).toContain("sed -n");
   });
 
+  it("confirms EOF for an unterminated line one byte below the scan cap", async () => {
+    await writeFile(
+      path.join(tmp, "scan-cap-minus-one.txt"),
+      "x".repeat(READ_FILE_SCAN_CAP_BYTES - 1),
+    );
+    const tool = () => createReadFileTool(def(READ_FILE_NAME, "r"));
+    const { result, text } = await run(tool(), { file_path: "scan-cap-minus-one.txt" }, tmp);
+    expect(result?.stopReason).toBeUndefined();
+    expect(text).toContain("[line truncated]");
+    expect(text).not.toContain("file has more than");
+    expect(text).not.toContain("Stopped after scanning");
+  });
+
   it("reports a lower-bound total when the file outruns the scan cap after the window", async () => {
     // > 8MB of two-byte lines: the window (1-2000) completes early, counting stops at the cap.
     await writeFile(path.join(tmp, "long.txt"), "x\n".repeat(READ_FILE_SCAN_CAP_BYTES / 2 + 4096));
