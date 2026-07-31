@@ -39,6 +39,7 @@ import { projectsRoutes } from "./http/routes/projects.js";
 import { membersRoutes } from "./http/routes/members.js";
 import { modelsRoutes } from "./http/routes/models.js";
 import { vaultRoutes } from "./http/routes/vault.js";
+import { memoryRoutes } from "./http/routes/memory.js";
 import { scheduleRoutes } from "./http/routes/schedules.js";
 import { benchmarksRoutes } from "./http/routes/benchmarks.js";
 import { agentSkillsRoutes, skillLibraryRoutes } from "./http/routes/skills.js";
@@ -61,6 +62,7 @@ import type { TitleNotifier } from "./runtime/title-generator.js";
 import { UsageRecorder } from "./runtime/usage-recorder.js";
 import { AdminService } from "./services/admin-service.js";
 import { AgentConfigService } from "./services/agent-config-service.js";
+import { MemoryService } from "./services/memory-service.js";
 import { AgentService } from "./services/agent-service.js";
 import { BenchmarkService } from "./services/benchmark-service.js";
 import { SnapshotService } from "./services/snapshot-service.js";
@@ -94,6 +96,7 @@ export interface AppDeps {
   projectConfigService: ProjectConfigService;
   agentService: AgentService;
   agentConfigService: AgentConfigService;
+  memoryService: MemoryService;
   sessionService: SessionService;
   traceService: TraceService;
   usageService: UsageService;
@@ -149,6 +152,7 @@ export function buildAppDeps(config: ServerConfig, overrides: BuildDepsOverrides
   const projectConfigService = new ProjectConfigService(config.root);
   const agentConfigService = new AgentConfigService(config.root);
   const agentService = new AgentService(config.root, agentsRepo, agentConfigService);
+  const memoryService = new MemoryService(config.root, agentConfigService);
   const traceService = new TraceService(config.root);
   const workspaceFiles = new WorkspaceFilesService();
   // Per-process secret: preview tokens are short-lived, so losing them on restart is
@@ -259,6 +263,7 @@ export function buildAppDeps(config: ServerConfig, overrides: BuildDepsOverrides
     projectConfigService,
     agentService,
     agentConfigService,
+    memoryService,
     sessionService,
     traceService,
     usageService,
@@ -371,6 +376,7 @@ export function createApp(deps: AppDeps): Hono<AppEnv> {
   app.route("/api/projects/:projectId/dirs", dirsRoutes(deps));
   app.route("/api/projects/:projectId/agents/:agentId/config", agentConfigRoutes(deps));
   app.route("/api/projects/:projectId/agents/:agentId/vault", vaultRoutes(deps));
+  app.route("/api/projects/:projectId/agents/:agentId/memory", memoryRoutes(deps));
   app.route("/api/projects/:projectId/agents/:agentId/schedules", scheduleRoutes(deps));
   app.route("/api/projects/:projectId/agents/:agentId/benchmarks", benchmarksRoutes(deps));
   app.route("/api/projects/:projectId/agents/:agentId/skills", agentSkillsRoutes(deps));

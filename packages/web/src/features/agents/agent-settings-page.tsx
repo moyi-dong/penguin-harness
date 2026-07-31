@@ -1,8 +1,8 @@
 /**
- * Agent settings page: six tabs —
+ * Agent settings page: seven tabs —
  * Overview (name/description/State path/active count/State version + snapshot
  * export-import + restore default configuration), Prompt (AGENTS.md and system_prompt editors + placeholder
- * reference), Runtime (max_turns, model.*, compaction.*), Tools (editable built-in
+ * reference), Memory (memory-tab.tsx), Runtime (max_turns, model.*, compaction.*), Tools (editable built-in
  * tools table, MCP Server read-only JSON), Vault (vault-tab.tsx), Schedule
  * (schedules-tab.tsx).
  * Save = PUT config (sends only the changed keys; YAML comments are preserved
@@ -33,11 +33,12 @@ import { OptionMenu, type OptionMenuChoice } from "../../components/ui/option-me
 import { Switch } from "../../components/ui/switch";
 import { ConfirmModal, useSaveConfirm } from "../../components/ui/confirm-modal";
 import { Skeleton } from "../../components/ui/skeleton";
+import { MemoryTab } from "./memory-tab";
 import { VaultTab } from "./vault-tab";
 import { SchedulesTab } from "./schedules-tab";
 import { thinkingLevelOptionsFor } from "../chat/thinking-level";
 
-type TabKey = "overview" | "prompt" | "runtime" | "tools" | "vault" | "schedules";
+type TabKey = "overview" | "prompt" | "memory" | "runtime" | "tools" | "vault" | "schedules";
 
 /**
  * Dropdown rows from a dictionary's [value, description] pairs (exported for unit tests).
@@ -77,6 +78,7 @@ export function AgentSettingsPage() {
   const TABS = [
     { key: "overview", label: S.agent.tabOverview },
     { key: "prompt", label: S.agent.tabPrompt },
+    { key: "memory", label: S.agent.tabMemory },
     { key: "runtime", label: S.agent.tabRuntime },
     { key: "tools", label: S.agent.tabTools },
     { key: "vault", label: S.agent.tabVault },
@@ -197,6 +199,7 @@ export function AgentSettingsPage() {
             />
           )}
           {tab === "prompt" && <PromptTab data={data} onSave={save} />}
+          {tab === "memory" && <MemoryTab agentId={agentId} />}
           {tab === "runtime" && <RuntimeTab data={data} onSave={save} />}
           {tab === "tools" && <ToolsTab data={data} onSave={save} />}
           {tab === "vault" && <VaultTab agentId={agentId} />}
